@@ -158,29 +158,26 @@ int main(){
 
     write(descSockSRV, infosConnexion, strlen(infosConnexion));
     read(descSockSRV, buffer, MAXBUFFERLEN-1);
+    write(descSockCOM, buffer, strlen(buffer));
 
     strcpy(buffer, "331 Mot de passe requis :\n");
     printf("%s\n", buffer);
-
-    printf("jaune\n");
     write(descSockCOM, buffer, strlen(buffer));
     
-    read(descSockCOM, buffer, MAXBUFFERLEN-1);
-    
+
+    printf("jaune\n");
+    //read(descSockCOM, buffer, MAXBUFFERLEN-1);
+    printf("rouge\n");
     strcat(infosConnexion, buffer);
     strcat(infosConnexion, "\r\n");
 
     write(descSockSRV, infosConnexion, strlen(infosConnexion));
 
-    printf("%s\n", infosConnexion);
-
-    //lis le srv pour le mdp
-    read(descSockSRV, buffer, MAXBUFFERLEN-1);
-
     //couille
-    printf("%s\n", buffer);
+    //printf("%s\n", buffer);
 
 
+    /*
     strcpy(buffer, strcat(user,"\r\n"));
     write(descSockCOM, buffer, strlen(buffer));
 
