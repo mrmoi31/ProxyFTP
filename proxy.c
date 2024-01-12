@@ -103,7 +103,6 @@ int main(){
     strcpy(buffer, "220 Identification user@nomserveur\r\n");
     write(descSockCOM, buffer, strlen(buffer));
 
-
     /*******************/
 
     read(descSockCOM, buffer, MAXBUFFERLEN-1);
@@ -143,36 +142,41 @@ int main(){
         write(descSockCOM, buffer, strlen(buffer));
     }
 
+    //ping serv
     strcpy(buffer,"PASV");
     write(descSockSRV, buffer, sizeof("PASV"));
     read(descSockSRV, buffer, MAXBUFFERLEN-1);
-    *(strchr(buffer, '\n') + 1) = '\0'; 
+    *(strchr(buffer, '\n') + 1) = '\0';
     
     //print welcome
     write(descSockCOM, buffer, strlen(buffer));
     printf("%s\n", buffer);
 
     //envoie le login sur le srv
-
+    /*
     strcat(infosConnexion, "\r\n");
-
     write(descSockSRV, infosConnexion, strlen(infosConnexion));
     read(descSockSRV, buffer, MAXBUFFERLEN-1);
+    */
+    
+    printf("%s\n", infosConnexion);
+    printf("%s\n", buffer);
+    *(strchr(buffer, '\n') + 1) = '\0';
+    
     write(descSockCOM, buffer, strlen(buffer));
+    printf("%s\n", buffer);
 
     strcpy(buffer, "331 Mot de passe requis :\n");
     printf("%s\n", buffer);
     write(descSockCOM, buffer, strlen(buffer));
     
+    read(descSockCOM, buffer, MAXBUFFERLEN-1);
 
-    printf("jaune\n");
-    //read(descSockCOM, buffer, MAXBUFFERLEN-1);
-    printf("rouge\n");
+    printf("%s\n", buffer);
+
     strcat(infosConnexion, buffer);
     strcat(infosConnexion, "\r\n");
-
     write(descSockSRV, infosConnexion, strlen(infosConnexion));
-
     //couille
     //printf("%s\n", buffer);
 
