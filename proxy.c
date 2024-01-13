@@ -150,8 +150,8 @@ int main(){
     memset(buffer, 0, MAXBUFFERLEN);
 
     //ping serv
-    strcpy(buffer,"PASV");
-    ecode = write(descSockSRV, buffer, sizeof("PASV"));
+    strcpy(buffer,"PASV\r\n");
+    ecode = write(descSockSRV, buffer, sizeof("PASV\r\n"));
     if (ecode < 0){
         perror("erreur ping\n");
         printf("erreur ping\n");
@@ -173,11 +173,11 @@ int main(){
         printf("erreur welcome\n");
         exit(42);
     }
-
+    buffer[ecode] = '\0';
     //printf("%s\n", buffer);
 
-    //envoie le login sur le srv
     
+    //envoie le login sur le srv
     strcat(infosConnexion, "\r\n");
     ecode = write(descSockSRV, infosConnexion, strlen(infosConnexion));
     if (ecode < 0){
@@ -185,7 +185,8 @@ int main(){
         printf("erreur id\n");
         exit(42);
     }
-    
+
+    // read 331 besoin mdp
     ecode = read(descSockSRV, buffer, MAXBUFFERLEN-1);
     if (ecode < 0){
         perror("erreur lecture serveur 2\n");
@@ -196,6 +197,7 @@ int main(){
     //printf("%s\n", buffer);
     //*(strchr(buffer, '\n') + 1) = '\0';
     
+    // demande user mdp
     ecode = write(descSockCOM, buffer, strlen(buffer));
     if (ecode < 0){
         perror("erreur print id\n");
@@ -203,10 +205,31 @@ int main(){
         exit(42);
     }
 
-    //printf("%s\n", buffer);
+    ecode = read(descSockCOM, buffer, MAXBUFFERLEN-1);
+    if (ecode < 1)
+    {
+        perror("erreur lecture 3\n");
+        printf("erreur lecture 3\n");
+        exit(42);
+    }
 
+    printf("%s\n", buffer);
+    
+    /*
+    ecode = write(descSockCOM, buffer, strlen(buffer));
+    if (ecode < 1)
+    {
+        perror("erreur envoi\n");
+        printf("erreur envoi\n");
+        exit(42);
+    }
+    
+    /*
     strcpy(buffer, "331 Mot de passe requis :\r\n");
     //printf("%s\n", buffer);
+    */
+
+    // envoi mdp sur serv
     ecode = write(descSockCOM, buffer, strlen(buffer));
     
     if (ecode < 0){
@@ -214,7 +237,7 @@ int main(){
         printf("erreur mdp\n");
         exit(42);
     }
-
+    /*
     ecode = read(descSockCOM, buffer, MAXBUFFERLEN-1);
     if (ecode < 0){
         perror("erreur lecture serveur 3\n");
