@@ -100,10 +100,15 @@ int main(){
     /*****
      * Testez de mettre 220 devant BLABLABLA ...
      * **/
+
+    buffer[MAXBUFFERLEN-1] = '\0';
+
     strcpy(buffer, "220 Identification user@nomserveur\r\n");
     write(descSockCOM, buffer, strlen(buffer));
 
-    /*******************/
+    /**********************************************************************************************************/
+    /**********************************************************************************************************/
+    /**********************************************************************************************************/
 
     read(descSockCOM, buffer, MAXBUFFERLEN-1);
     char infosConnexion[MAXBUFFERLEN];
@@ -142,46 +147,92 @@ int main(){
         write(descSockCOM, buffer, strlen(buffer));
     }
 
+    memset(buffer, 0, MAXBUFFERLEN);
+
     //ping serv
     strcpy(buffer,"PASV");
-    write(descSockSRV, buffer, sizeof("PASV"));
-    read(descSockSRV, buffer, MAXBUFFERLEN-1);
-    *(strchr(buffer, '\n') + 1) = '\0';
+    ecode = write(descSockSRV, buffer, sizeof("PASV"));
+    if (ecode < 0){
+        perror("erreur ping\n");
+        printf("erreur ping\n");
+        exit(42);
+    }
+    ecode = read(descSockSRV, buffer, MAXBUFFERLEN-1);
+    if (ecode < 0){
+        perror("erreur lecture serveur\n");
+        printf("erreur lecture serveur\n");
+        exit(42);
+    }
+    buffer[ecode] = '\0';
+    //*(strchr(buffer, '\n') + 1) = '\0';
     
     //print welcome
-    write(descSockCOM, buffer, strlen(buffer));
-    printf("%s\n", buffer);
+    ecode = write(descSockCOM, buffer, strlen(buffer));
+    if (ecode < 0){
+        perror("erreur welcome\n");
+        printf("erreur welcome\n");
+        exit(42);
+    }
+
+    //printf("%s\n", buffer);
 
     //envoie le login sur le srv
-    /*
+    
     strcat(infosConnexion, "\r\n");
-    write(descSockSRV, infosConnexion, strlen(infosConnexion));
-    read(descSockSRV, buffer, MAXBUFFERLEN-1);
-    */
+    ecode = write(descSockSRV, infosConnexion, strlen(infosConnexion));
+    if (ecode < 0){
+        perror("erreur à l'id\n");
+        printf("erreur id\n");
+        exit(42);
+    }
     
+    ecode = read(descSockSRV, buffer, MAXBUFFERLEN-1);
+    if (ecode < 0){
+        perror("erreur lecture serveur 2\n");
+        printf("erreur lecture serveur 2\n");
+        exit(42);
+    }
     printf("%s\n", infosConnexion);
-    printf("%s\n", buffer);
-    *(strchr(buffer, '\n') + 1) = '\0';
+    //printf("%s\n", buffer);
+    //*(strchr(buffer, '\n') + 1) = '\0';
     
-    write(descSockCOM, buffer, strlen(buffer));
-    printf("%s\n", buffer);
+    ecode = write(descSockCOM, buffer, strlen(buffer));
+    if (ecode < 0){
+        perror("erreur print id\n");
+        printf("erreur print id\n");
+        exit(42);
+    }
 
-    strcpy(buffer, "331 Mot de passe requis :\n");
-    printf("%s\n", buffer);
-    write(descSockCOM, buffer, strlen(buffer));
+    //printf("%s\n", buffer);
+
+    strcpy(buffer, "331 Mot de passe requis :\r\n");
+    //printf("%s\n", buffer);
+    ecode = write(descSockCOM, buffer, strlen(buffer));
     
-    read(descSockCOM, buffer, MAXBUFFERLEN-1);
+    if (ecode < 0){
+        perror("erreur mdp\n");
+        printf("erreur mdp\n");
+        exit(42);
+    }
 
+    ecode = read(descSockCOM, buffer, MAXBUFFERLEN-1);
+    if (ecode < 0){
+        perror("erreur lecture serveur 3\n");
+        printf("erreur lecture serveur 3\n");
+        exit(42);
+    }
     printf("%s\n", buffer);
 
     strcat(infosConnexion, buffer);
     strcat(infosConnexion, "\r\n");
-    write(descSockSRV, infosConnexion, strlen(infosConnexion));
-    //couille
+    ecode = write(descSockSRV, infosConnexion, strlen(infosConnexion));
+    if (ecode < 0){
+        perror("erreur de connexion\n");
+        printf("erreur de connexion\n");
+        exit(42);
+    }
     //printf("%s\n", buffer);
-
-
-    /*
+/*
     strcpy(buffer, strcat(user,"\r\n"));
     write(descSockCOM, buffer, strlen(buffer));
 
