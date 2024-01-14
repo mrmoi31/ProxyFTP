@@ -150,13 +150,14 @@ int main(){
     memset(buffer, 0, MAXBUFFERLEN);
 
     //ping serv
+    /*
     strcpy(buffer,"PASV\r\n");
     ecode = write(descSockSRV, buffer, sizeof("PASV\r\n"));
     if (ecode < 0){
         perror("erreur ping\n");
         printf("erreur ping\n");
         exit(42);
-    }
+    }*/
     ecode = read(descSockSRV, buffer, MAXBUFFERLEN-1);
     if (ecode < 0){
         perror("erreur lecture serveur\n");
@@ -193,8 +194,8 @@ int main(){
         printf("erreur lecture serveur 2\n");
         exit(42);
     }
-    printf("%s\n", infosConnexion);
-    //printf("%s\n", buffer);
+    //printf("%s\n", infosConnexion);
+    printf("%s\n", buffer);
     //*(strchr(buffer, '\n') + 1) = '\0';
     
     // demande user mdp
@@ -213,7 +214,7 @@ int main(){
         exit(42);
     }
 
-    printf("%s\n", buffer);
+    //printf("%s\n", buffer);
     
     /*
     ecode = write(descSockCOM, buffer, strlen(buffer));
