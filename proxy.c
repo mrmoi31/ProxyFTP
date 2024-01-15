@@ -24,12 +24,9 @@ int main(){
     char serverAddr[MAXHOSTLEN];     // Adresse du serveur
     char serverPort[MAXPORTLEN];     // Port du server
     int descSockRDV;                 // Descripteur de socket de rendez-vous
-    int descSockCOM;                 // Descripteur de socket de communication
-    int descSockDATASERV;
-    int descSockDATACLIENT;
-    bool isConnected;                 
+    int descSockCOM;                 // Descripteur de socket de communication             
     struct addrinfo hints;           // Contrôle la fonction getaddrinfo
-    struct addrinfo *res, *resPtr;            // Contient le résultat de la fonction getaddrinfo
+    struct addrinfo *res;            // Contient le résultat de la fonction getaddrinfo
     struct sockaddr_storage myinfo;  // Informations sur la connexion de RDV
     struct sockaddr_storage from;    // Informations sur le client connecté
     socklen_t len;                   // Variable utilisée pour stocker les 
