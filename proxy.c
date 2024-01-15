@@ -17,7 +17,7 @@
 
 #define FTPPORT "21"                  // Port d'écoute par défaut du protocole FTP
 
-//void fils();
+void fils();
 
 int main(){
     int ecode;                       // Code retour des fonctions
@@ -95,7 +95,8 @@ int main(){
      if (descSockCOM == -1){
          perror("Erreur accept\n");
          exit(6);
-     }
+    }
+
     // Echange de données avec le client connecté
 
     /*****
@@ -110,7 +111,7 @@ int main(){
     /**********************************************************************************************************/
     /**********************************************************************************************************/
     /**********************************************************************************************************/
-/*
+
     pid_t pid;
 
     pid = fork();
@@ -125,8 +126,15 @@ int main(){
         exit(0);
     }
 
-    void fils (int descSockCOM){
-*/
+    close(descSockRDV);
+
+}
+
+    void fils(int descSockCOM){
+
+        char buffer[MAXBUFFERLEN];
+        int ecode;
+
         read(descSockCOM, buffer, MAXBUFFERLEN-1);
         char infosConnexion[MAXBUFFERLEN];
         strcpy(infosConnexion, buffer);
@@ -230,10 +238,10 @@ int main(){
 
         // connection avec le client
         int actif;
-        ecode = connect2Server(ipClient, portClient, &actif);
+        ecode = connect2Server(adresseClient, portClient, &actif);
 
         if (ecode) {
-            perror("erreur connexion data client")
+            perror("erreur connexion data client");
             exit(42);
         }
 
@@ -264,7 +272,7 @@ int main(){
 
         ecode = connect2Server(adresseServeur, portServeur, &passif);
         if (ecode) {
-            perror("erreur connexion data serveur")
+            perror("erreur connexion data serveur");
             exit(42);
         }
 
@@ -294,7 +302,7 @@ int main(){
             if (ecode == -1)
             {
                 perror("probleme de lecture");
-                exit(1);
+                exit(42);
             }
             buffer[ecode] = '\0';
             printf("%s", buffer);
@@ -315,11 +323,9 @@ int main(){
 
         write(descSockCOM, buffer, strlen(buffer));
 
+        //fermeture connexion
+        close(descSockSRV);
+        close(descSockCOM);
+    }
     //anonymous@ftp.fau.de
     //todo@truc.com
-
-    //Fermeture de la connexion
-    close(descSockSRV);
-    close(descSockCOM);
-    close(descSockRDV);
-}
