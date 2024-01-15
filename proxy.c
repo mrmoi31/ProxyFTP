@@ -17,6 +17,7 @@
 
 #define FTPPORT "21"                  // Port d'écoute par défaut du protocole FTP
 
+//void fils();
 
 int main(){
     int ecode;                       // Code retour des fonctions
@@ -24,8 +25,11 @@ int main(){
     char serverPort[MAXPORTLEN];     // Port du server
     int descSockRDV;                 // Descripteur de socket de rendez-vous
     int descSockCOM;                 // Descripteur de socket de communication
+    int descSockDATASERV;
+    int descSockDATACLIENT;
+    bool isConnected;                 
     struct addrinfo hints;           // Contrôle la fonction getaddrinfo
-    struct addrinfo *res;            // Contient le résultat de la fonction getaddrinfo
+    struct addrinfo *res, *resPtr;            // Contient le résultat de la fonction getaddrinfo
     struct sockaddr_storage myinfo;  // Informations sur la connexion de RDV
     struct sockaddr_storage from;    // Informations sur le client connecté
     socklen_t len;                   // Variable utilisée pour stocker les 
@@ -109,179 +113,216 @@ int main(){
     /**********************************************************************************************************/
     /**********************************************************************************************************/
     /**********************************************************************************************************/
-
-    read(descSockCOM, buffer, MAXBUFFERLEN-1);
-    char infosConnexion[MAXBUFFERLEN];
-    strcpy(infosConnexion, buffer);
-
-    char* user = infosConnexion;
-    char* nomServeur;
-
-    // USER login@serveur\0
-
-    while (*user != ' ') {
-        user++;
-    }
-    user++;
-
-    int longUser = 0;
-    int longServ = 0;
-    
-    while (*(user + longUser) != '@'){
-        longUser++;
-    }
-    
-    *(user + longUser) = '\0';
-    nomServeur = user + longUser + 1;
-
-    while (*(nomServeur + longServ) != '\n'){
-        longServ++;
-    }
-    *(nomServeur + longServ - 1) = '\0';
-
-    // USER login\0serveur\0
-
-    int descSockSRV = 0000;
-    if (connect2Server(nomServeur, FTPPORT, &descSockSRV) != 0) {
-        strcpy(buffer, "520 Connexion au serveur impossible\r\n");
-        write(descSockCOM, buffer, strlen(buffer));
-    }
-
-    memset(buffer, 0, MAXBUFFERLEN);
-
-    //ping serv
-    /*
-    strcpy(buffer,"PASV\r\n");
-    ecode = write(descSockSRV, buffer, sizeof("PASV\r\n"));
-    if (ecode < 0){
-        perror("erreur ping\n");
-        printf("erreur ping\n");
-        exit(42);
-    }*/
-    ecode = read(descSockSRV, buffer, MAXBUFFERLEN-1);
-    if (ecode < 0){
-        perror("erreur lecture serveur\n");
-        printf("erreur lecture serveur\n");
-        exit(42);
-    }
-    buffer[ecode] = '\0';
-    //*(strchr(buffer, '\n') + 1) = '\0';
-    
-    //print welcome
-    ecode = write(descSockCOM, buffer, strlen(buffer));
-    if (ecode < 0){
-        perror("erreur welcome\n");
-        printf("erreur welcome\n");
-        exit(42);
-    }
-    buffer[ecode] = '\0';
-    //printf("%s\n", buffer);
-
-    
-    //envoie le login sur le srv
-    strcat(infosConnexion, "\r\n");
-    ecode = write(descSockSRV, infosConnexion, strlen(infosConnexion));
-    if (ecode < 0){
-        perror("erreur à l'id\n");
-        printf("erreur id\n");
-        exit(42);
-    }
-
-    // read 331 besoin mdp
-    ecode = read(descSockSRV, buffer, MAXBUFFERLEN-1);
-    if (ecode < 0){
-        perror("erreur lecture serveur 2\n");
-        printf("erreur lecture serveur 2\n");
-        exit(42);
-    }
-    //printf("%s\n", infosConnexion);
-    printf("%s\n", buffer);
-    //*(strchr(buffer, '\n') + 1) = '\0';
-    
-    // demande user mdp
-    ecode = write(descSockCOM, buffer, strlen(buffer));
-    if (ecode < 0){
-        perror("erreur print id\n");
-        printf("erreur print id\n");
-        exit(42);
-    }
-
-    ecode = read(descSockCOM, buffer, MAXBUFFERLEN-1);
-    if (ecode < 1)
-    {
-        perror("erreur lecture 3\n");
-        printf("erreur lecture 3\n");
-        exit(42);
-    }
-
-    //printf("%s\n", buffer);
-    
-    /*
-    ecode = write(descSockCOM, buffer, strlen(buffer));
-    if (ecode < 1)
-    {
-        perror("erreur envoi\n");
-        printf("erreur envoi\n");
-        exit(42);
-    }
-    
-    /*
-    strcpy(buffer, "331 Mot de passe requis :\r\n");
-    //printf("%s\n", buffer);
-    */
-
-    // envoi mdp sur serv
-    ecode = write(descSockCOM, buffer, strlen(buffer));
-    
-    if (ecode < 0){
-        perror("erreur mdp\n");
-        printf("erreur mdp\n");
-        exit(42);
-    }
-    /*
-    ecode = read(descSockCOM, buffer, MAXBUFFERLEN-1);
-    if (ecode < 0){
-        perror("erreur lecture serveur 3\n");
-        printf("erreur lecture serveur 3\n");
-        exit(42);
-    }
-    printf("%s\n", buffer);
-
-    strcat(infosConnexion, buffer);
-    strcat(infosConnexion, "\r\n");
-    ecode = write(descSockSRV, infosConnexion, strlen(infosConnexion));
-    if (ecode < 0){
-        perror("erreur de connexion\n");
-        printf("erreur de connexion\n");
-        exit(42);
-    }
-    //printf("%s\n", buffer);
 /*
-    strcpy(buffer, strcat(user,"\r\n"));
-    write(descSockCOM, buffer, strlen(buffer));
+    pid_t pid;
 
-    //print besoin de mdp sur client 
-    strcpy(buffer, "331 Mot de passe requis\r\n");
-    write(descSockCOM, buffer, strlen(buffer));
-    
-    //lis mdp client 
-    read(descSockCOM, buffer, MAXBUFFERLEN-1);
+    pid = fork();
+    switch (pid)
+    {
+    case -1:
+        perror("fils avorté");
+        exit(1);
 
+    case 0:
+        fils(descSockCOM);
+        exit(0);
+    }
+
+    void fils (int descSockCOM){
+*/
+        read(descSockCOM, buffer, MAXBUFFERLEN-1);
+        char infosConnexion[MAXBUFFERLEN];
+        strcpy(infosConnexion, buffer);
+
+        char user[50], nomServeur[50];
+
+        //formatage user et nomServeur
+        sscanf(buffer, "%49[^@]@%49s", user, nomServeur);
+        strncat(user, "\r\n", 49);
+
+        //creation socket serveur
+        int descSockSRV = 0;
+        if (connect2Server(nomServeur, FTPPORT, &descSockSRV) != 0) {
+            strcpy(buffer, "520 Connexion au serveur impossible\r\n");
+            write(descSockCOM, buffer, strlen(buffer));
+        }
+
+        memset(buffer, 0, MAXBUFFERLEN);
+
+        ecode = read(descSockSRV, buffer, MAXBUFFERLEN-1);
+        if (ecode < 0){
+            perror("erreur lecture serveur\n");
+            exit(42);
+        }
+        buffer[ecode] = '\0';
+
+        memset(buffer, 0, MAXBUFFERLEN);
+
+        //envoie le login sur le srv
+        strcat(infosConnexion, "\r\n");
+        ecode = write(descSockSRV, infosConnexion, strlen(infosConnexion));
+        if (ecode < 0){
+            perror("erreur à l'id\n");
+            exit(42);
+        }
+
+        // read 331 besoin mdp
+        ecode = read(descSockSRV, buffer, MAXBUFFERLEN-1);
+        if (ecode < 0){
+            perror("erreur lecture serveur 2\n");
+            exit(42);
+        }
+        buffer[ecode] = '\0';
+        
+        // demande user mdp
+        ecode = write(descSockCOM, buffer, strlen(buffer));
+        if (ecode < 0){
+            perror("erreur print id\n");
+            exit(42);
+        }
+
+        memset(buffer, 0, MAXBUFFERLEN);
+
+        //ecriture mdp
+        ecode = read(descSockCOM, buffer, MAXBUFFERLEN-1);
+        if (ecode < 1)
+        {
+            perror("erreur lecture 3\n");
+            exit(42);
+        }
+        buffer[ecode] = '\0';
+
+        //envoie mdp serveur
+        ecode = write(descSockSRV, buffer, strlen(buffer));
+        if (ecode < 0){
+            perror("erreur mdp serveur\n");
+            exit(42);
+        }
+
+        //lecture access granted
+        ecode = read(descSockSRV, buffer, MAXBUFFERLEN-1);
+        if (ecode < 0){
+            perror("erreur access\n");
+            exit(42);
+        }
+        buffer[ecode]  = '\0';
+
+        //ecriture access granted client
+        ecode = write(descSockCOM, buffer, strlen(buffer));
+        if (ecode < 0){
+            perror("erreur ecriture client\n");
+            exit(42);
+        }
+
+        ecode = read(descSockSRV, buffer, MAXBUFFERLEN-1);
+        if (ecode < 0) {
+            perror("erreur PORT");
+            exit(42);
+        }
+
+        int ic1, ic2, ic3, ic4, pc1, pc2;
+        sscanf(buffer, "PORT %d,%d,%d,%d,%d,%d", &ic1, &ic2, &ic3, &ic4, &pc1, &pc2);
+
+        memset(buffer, 0, MAXBUFFERLEN);
+        
+        char adresseClient[MAXBUFFERLEN];
+        sprintf(adresseClient, "%d.%d.%d.%d", ic1, ic2, ic3, ic4);
+
+        char portClient[MAXBUFFERLEN];
+        sprintf(portClient, "%d", pc1*256 + pc2);
+
+        // connection avec le client
+        int actif;
+        ecode = connect2Server(ipClient, portClient, &actif);
+
+        if (ecode) {
+            perror("erreur connexion data client")
+            exit(42);
+        }
+
+        strcpy(buffer,"PASV\r\n");
+        ecode = write(descSockSRV, buffer, 6);
+        if (ecode < 0) {
+            perror("erreur passive mode\n");
+            exit(42);
+        }
+
+        ecode = read(descSockSRV, buffer, MAXBUFFERLEN-1);
+        if (ecode < 0) {
+            perror("erreur PORT serveur");
+            exit(42);
+        }
+        buffer[ecode]='\0';
+
+        int is1, is2, is3, is4, ps1, ps2;
+        sscanf(buffer, "%*[^(](%d,%d,%d,%d,%d,%d", &is1, &is2, &is3, &is4, &ps1, &ps2);
+
+        // Récupération de l'adresse et du port du serveur
+        char adresseServeur[MAXBUFFERLEN];
+        char portServeur[MAXBUFFERLEN];
+        sprintf(adresseServeur, "%d.%d.%d.%d", is1, is2, is3, is4);
+        sprintf(portServeur, "%d", ps1*256 + ps2);
+
+        int passif;
+
+        ecode = connect2Server(adresseServeur, portServeur, &passif);
+        if (ecode) {
+            perror("erreur connexion data serveur")
+            exit(42);
+        }
+
+        write(descSockCOM, "200 PORT commande réussie\r\n", strlen("200 PORT commande réussie\r\n"));
+
+        while (1){
+            int ecode = 0;
+            ecode = read(descSockCOM, buffer, MAXBUFFERLEN-1);
+            if (ecode <= 0) break;
+            buffer[ecode] = '\0';
+            
+            ecode = write(descSockSRV, buffer, strlen(buffer));
+            if (ecode <= 0) break;
+            
+            ecode = read(descSockSRV, buffer, MAXBUFFERLEN-1);
+            if (ecode <= 0) break;
+            buffer[ecode] = '\0';
+            
+            ecode = write(descSockCOM, buffer, strlen(buffer));
+            if (ecode <= 0) break;
+        }
+
+        do // boucle afin de lire l'entierete du ls
+        {
+            // lecture de donnees du serveur
+            ecode = read(passif, buffer, MAXBUFFERLEN - 1);
+            if (ecode == -1)
+            {
+                perror("probleme de lecture");
+                exit(1);
+            }
+            buffer[ecode] = '\0';
+            printf("%s", buffer);
+
+            // envoie des donnees au client
+            write(actif, buffer, strlen(buffer));
+        } while (read(passif, buffer, MAXBUFFERLEN - 1) != 0);
+
+        close(actif);
+        close(passif);
+
+        ecode = read(descSockSRV, buffer, MAXBUFFERLEN-1);
+        if (ecode < 0) {
+            perror("erreur lecture confirmation");
+            exit(42);
+        }
+        buffer[ecode] = '\0';
+
+        write(descSockCOM, buffer, strlen(buffer));
 
     //anonymous@ftp.fau.de
-    //mdp : todo@truc.com 
-
-    /*******
-     * 
-     * read descsockcom
-     * pointeur nomlogin + pointeur nomserv
-     * connect2server
-     * envoi instructions client vers serveur et inverse
-     * après connexion creer processus pour gerer plusieurs instances du client
-     * 
-     * *****/
+    //todo@truc.com
 
     //Fermeture de la connexion
+    close(descSockSRV);
     close(descSockCOM);
     close(descSockRDV);
 }
