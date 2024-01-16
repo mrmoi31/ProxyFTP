@@ -17,7 +17,7 @@
 
 #define FTPPORT "21"                  // Port d'écoute par défaut du protocole FTP
 
-void fils();
+//void fils();
 
 int main(){
     int ecode;                       // Code retour des fonctions
@@ -105,13 +105,15 @@ int main(){
 
     buffer[MAXBUFFERLEN-1] = '\0';
 
+    memset(buffer, 0, MAXBUFFERLEN);
+
     strcpy(buffer, "220 Identification user@nomserveur\r\n");
     write(descSockCOM, buffer, strlen(buffer));
 
     /**********************************************************************************************************/
     /**********************************************************************************************************/
     /**********************************************************************************************************/
-
+/*
     pid_t pid;
 
     pid = fork();
@@ -127,13 +129,13 @@ int main(){
     }
 
     close(descSockRDV);
+*/
+//}
 
-}
+    //void fils(int descSockCOM){
 
-    void fils(int descSockCOM){
-
-        char buffer[MAXBUFFERLEN];
-        int ecode;
+        //char buffer[MAXBUFFERLEN];
+        //int ecode;
 
         read(descSockCOM, buffer, MAXBUFFERLEN-1);
         char infosConnexion[MAXBUFFERLEN];
@@ -144,6 +146,11 @@ int main(){
         //formatage user et nomServeur
         sscanf(buffer, "%49[^@]@%49s", user, nomServeur);
         strncat(user, "\r\n", 49);
+
+        printf("buffer : %s\n", buffer);
+        printf("user : %s\n", user);
+        printf("nom serveur : %s\n", nomServeur);
+        printf("infos connexion : %s\n", infosConnexion);
 
         //creation socket serveur
         int descSockSRV = 0;
@@ -164,8 +171,8 @@ int main(){
         memset(buffer, 0, MAXBUFFERLEN);
 
         //envoie le login sur le srv
-        strcat(infosConnexion, "\r\n");
-        ecode = write(descSockSRV, infosConnexion, strlen(infosConnexion));
+        strcat(user, "\r\n");
+        ecode = write(descSockSRV, user, strlen(user));
         if (ecode < 0){
             perror("erreur à l'id\n");
             exit(42);
@@ -178,7 +185,7 @@ int main(){
             exit(42);
         }
         buffer[ecode] = '\0';
-        
+
         // demande user mdp
         ecode = write(descSockCOM, buffer, strlen(buffer));
         if (ecode < 0){
@@ -195,7 +202,9 @@ int main(){
             perror("erreur lecture 3\n");
             exit(42);
         }
-        buffer[ecode] = '\0';
+
+        printf("mdp : %s", buffer);
+        strcat(buffer,"\r\n\0");
 
         //envoie mdp serveur
         ecode = write(descSockSRV, buffer, strlen(buffer));
@@ -203,6 +212,7 @@ int main(){
             perror("erreur mdp serveur\n");
             exit(42);
         }
+        memset(buffer, 0, MAXBUFFERLEN);
 
         //lecture access granted
         ecode = read(descSockSRV, buffer, MAXBUFFERLEN-1);
@@ -324,6 +334,7 @@ int main(){
         write(descSockCOM, buffer, strlen(buffer));
 
         //fermeture connexion
+        close(descSockRDV);
         close(descSockSRV);
         close(descSockCOM);
     }
