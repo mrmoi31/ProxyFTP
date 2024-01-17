@@ -168,7 +168,7 @@ int main(){
         memset(buffer, 0, MAXBUFFERLEN);
 
         //envoie le login sur le srv
-        strcat(user, "\r\n");
+        //strcat(user, "\r\n");
         ecode = write(descSockSRV, user, strlen(user));
         if (ecode < 0){
             perror("erreur à l'id\n");
@@ -285,7 +285,7 @@ int main(){
 
         write(descSockCOM, "200 PORT commande réussie\r\n", strlen("200 PORT commande réussie\r\n"));
 
-        while (1){
+        while (buffer != "QUIT "){
             int ecode = 0;
             ecode = read(descSockCOM, buffer, MAXBUFFERLEN-1);
             if (ecode <= 0) break;
