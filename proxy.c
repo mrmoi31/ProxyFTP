@@ -147,10 +147,7 @@ int main(){
         sscanf(buffer, "%49[^@]@%49s", user, nomServeur);
         strncat(user, "\r\n", 49);
 
-        printf("buffer : %s\n", buffer);
-        printf("user : %s\n", user);
-        printf("nom serveur : %s\n", nomServeur);
-        printf("infos connexion : %s\n", infosConnexion);
+        printf("buffer : %s\nuser : %s\nnom serveur : %s\ninfos connexion : %s\n", buffer, user, nomServeur, infosConnexion);
 
         //creation socket serveur
         int descSockSRV = 0;
@@ -204,7 +201,7 @@ int main(){
         }
 
         printf("mdp : %s", buffer);
-        strcat(buffer,"\r\n\0");
+        strcat(buffer,"\r\n");
 
         //envoie mdp serveur
         ecode = write(descSockSRV, buffer, strlen(buffer));
