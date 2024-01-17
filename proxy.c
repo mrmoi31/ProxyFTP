@@ -180,6 +180,10 @@ int main(){
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+<<<<<<< HEAD
+=======
+        //envoie le login sur le srv
+>>>>>>> a074ed16cd9e5fcff2c706b3f3c5038bf2a848be
         ecode = write(descSockSRV, user, strlen(user));
         if (ecode < 0){
             perror("erreur à l'id\n");
@@ -259,13 +263,13 @@ int main(){
             perror("erreur ecriture client\n");
             exit(42);
         }
-
+        /*
         ecode = read(descSockSRV, buffer, MAXBUFFERLEN-1);
         if (ecode < 0) {
             perror("erreur PORT");
             exit(42);
         }
-
+        */
         int ic1, ic2, ic3, ic4, pc1, pc2;
         sscanf(buffer, "PORT %d,%d,%d,%d,%d,%d", &ic1, &ic2, &ic3, &ic4, &pc1, &pc2);
 
