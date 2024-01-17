@@ -155,8 +155,6 @@ int main(){
         sscanf(buffer, "%49[^@]@%49s", user, nomServeur);
         strncat(user, "\r\n", 49);
 
-        printf("buffer : %s\nuser : %s\nnom serveur : %s\ninfos connexion : %s\n", buffer, user, nomServeur, infosConnexion);
-
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 //creation socket serveur
@@ -227,7 +225,6 @@ int main(){
             exit(42);
         }
 
-        printf("mdp : %s", buffer);
         strcat(buffer,"\r\n");
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -263,21 +260,37 @@ int main(){
             perror("erreur ecriture client\n");
             exit(42);
         }
+        memset(buffer, 0, MAXBUFFERLEN);
 
-        /*
+        
         ecode = read(descSockCOM, buffer, MAXBUFFERLEN-1);
         if (ecode < 0) {
             perror("erreur PORT");
             exit(42);
         }
-        
-        */
+        buffer[ecode] = '\0';
+
+        ecode = write(descSockSRV, buffer, strlen(buffer));
+        if (ecode < 0) {
+            perror("erreur ecriture serveur");
+            exit(42);
+        }
+
+        char target[10];
+
+        *target = '\0';
+        strncat(target, buffer, 4);
+
         memset(buffer, 0, MAXBUFFERLEN);
-        strcat(buffer, "EPRT ");
 
-        write(descSockSRV, buffer, strlen(buffer));
-
-        read(descSockSRV, buffer, MAXBUFFERLEN-1);
+        while (target != "PORT")
+        {
+            read(descSockSRV, buffer, MAXBUFFERLEN-1);
+            strncat(target, buffer, 4);
+            //memset(buffer, 0, MAXBUFFERLEN);
+        }
+        
+        //memset(buffer, 0, MAXBUFFERLEN);
         
         int ic1, ic2, ic3, ic4, pc1, pc2;
         sscanf(buffer, "EPRT %d,%d,%d,%d,%d,%d", &ic1, &ic2, &ic3, &ic4, &pc1, &pc2);
@@ -292,7 +305,7 @@ int main(){
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                //connection avec le client
+                //connexion avec le client
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
         int actif;
