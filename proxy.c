@@ -112,9 +112,9 @@ int main(){
 
     /**********************************************************************************************************/
     /**********************************************************************************************************/
-
-    /******************************DEBUT DU PROGRAMME********************************/
-
+    //                                                                                                        //
+    /**********************************************DEBUT DU PROGRAMME******************************************/
+    //                                                                                                        //
     /**********************************************************************************************************/
     /**********************************************************************************************************/
 /*
@@ -248,8 +248,8 @@ int main(){
             perror("erreur access\n");
             exit(42);
         }
-        buffer[ecode]  = '\0';
-
+        //buffer[ecode]  = '\0';
+        strcat(buffer, "\r\n\0");
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 //ecriture access granted client
@@ -262,13 +262,14 @@ int main(){
         }
         memset(buffer, 0, MAXBUFFERLEN);
 
-        
+        //pb
         ecode = read(descSockCOM, buffer, MAXBUFFERLEN-1);
         if (ecode < 0) {
             perror("erreur PORT");
             exit(42);
         }
         buffer[ecode] = '\0';
+        //strcat(buffer, "\r\n\0");
 
         ecode = write(descSockSRV, buffer, strlen(buffer));
         if (ecode < 0) {
@@ -279,17 +280,18 @@ int main(){
         char target[10];
 
         *target = '\0';
-        strncat(target, buffer, 4);
 
         memset(buffer, 0, MAXBUFFERLEN);
 
-        while (target != "PORT")
+        do
         {
-            read(descSockSRV, buffer, MAXBUFFERLEN-1);
+            ecode = read(descSockSRV, buffer, MAXBUFFERLEN-1);
+            buffer[ecode] = '\0';
             strncat(target, buffer, 4);
             //memset(buffer, 0, MAXBUFFERLEN);
         }
-        
+        while (target != "PORT");
+
         //memset(buffer, 0, MAXBUFFERLEN);
         
         int ic1, ic2, ic3, ic4, pc1, pc2;
@@ -353,7 +355,7 @@ int main(){
 
         write(descSockCOM, "200 PORT commande réussie\r\n", strlen("200 PORT commande réussie\r\n"));
 
-        while (buffer != "QUIT"){
+        while (target != "QUIT"){
             int ecode = 0;
             ecode = read(descSockCOM, buffer, MAXBUFFERLEN-1);
             if (ecode <= 0) break;
@@ -365,26 +367,32 @@ int main(){
             ecode = read(descSockSRV, buffer, MAXBUFFERLEN-1);
             if (ecode <= 0) break;
             buffer[ecode] = '\0';
+
+            //read(descSockSRV, buffer, MAXBUFFERLEN-1);
+            strncat(target, buffer, 4);
             
             ecode = write(descSockCOM, buffer, strlen(buffer));
             if (ecode <= 0) break;
-        }
+        
+            if (target == "LIST") {
+                do      // boucle afin de lire l'entierete du ls
+                {
+                    //lecture des donnees du serveur
+                    ecode = read(passif, buffer, MAXBUFFERLEN - 1);
+                    if (ecode == -1)
+                    {
+                        perror("probleme de lecture");
+                        exit(42);
+                    }
+                    buffer[ecode] = '\0';
+                    printf("%s", buffer);
 
-        do      // boucle afin de lire l'entierete du ls
-        {
-            //lecture des donnees du serveur
-            ecode = read(passif, buffer, MAXBUFFERLEN - 1);
-            if (ecode == -1)
-            {
-                perror("probleme de lecture");
-                exit(42);
+                    //envoie des donnees au client
+                    write(actif, buffer, strlen(buffer));
+                } while (read(passif, buffer, MAXBUFFERLEN - 1) != 0);
+
             }
-            buffer[ecode] = '\0';
-            printf("%s", buffer);
-
-            //envoie des donnees au client
-            write(actif, buffer, strlen(buffer));
-        } while (read(passif, buffer, MAXBUFFERLEN - 1) != 0);
+        }
 
         close(actif);
         close(passif);
